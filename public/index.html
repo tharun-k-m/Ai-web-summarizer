@@ -8,18 +8,34 @@
 :root{--bg:#f8fafc;--card:#fff;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;--blue:#3b82f6;--purple:#a855f7;--green:#10b981}
 *{box-sizing:border-box}
 body{margin:0;padding:40px 16px 80px;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55}
-main{max-width:1120px;margin:0 auto}
-.layout{display:flex;justify-content:center;align-items:flex-start;gap:20px}
-.col-left{flex:0 1 720px;min-width:0;transition:flex-basis .5s ease}
-.col-right{display:none;flex:1 1 0;min-width:0;flex-direction:column;gap:16px}
-.split .col-left{flex:0 0 calc(56% - 10px)}
-.split .col-right{display:flex;animation:popIn .5s ease}
-.side-h{font-size:1rem;margin:0 0 10px}
-.scroll{max-height:340px;overflow:auto}
+main{max-width:1120px;margin:0 auto;padding-top:20vh;transition:padding-top .5s ease}
+main.active{padding-top:0}
+.top{max-width:720px;margin:0 auto;text-align:center}
+.top .row{text-align:left}
+.results{display:none;margin-top:20px;gap:20px;align-items:start}
+.results.show{display:grid;grid-template-columns:7fr 3fr}
+.col-main{min-width:0;animation:slideLeft .5s ease}
+.col-side{display:flex;flex-direction:column;gap:16px;min-width:0;animation:popIn .5s ease .1s both}
+@keyframes slideLeft{from{transform:translateX(12%);opacity:.4}to{transform:none;opacity:1}}
+@media (max-width:860px){.results.show{grid-template-columns:1fr}}
+.askbtn{width:100%;display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid transparent;border-radius:12px;cursor:pointer;color:var(--text);font-weight:600;text-align:left;
+ background:linear-gradient(#fff,#fff) padding-box,linear-gradient(90deg,#3b82f6,#a855f7,#10b981) border-box;transition:background .2s}
+.askbtn:hover,.askbtn[aria-expanded=true]{background:linear-gradient(#f5f3ff,#eff6ff) padding-box,linear-gradient(90deg,#3b82f6,#a855f7,#10b981) border-box}
+.askbtn .orb{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#6366f1);box-shadow:0 0 10px rgba(168,85,247,.35);display:grid;place-items:center;flex:none}
+.askbtn .orb::after{content:"";width:6px;height:6px;border-radius:50%;background:#fff}
+.askbtn .count{margin-left:auto;font-weight:500;font-size:.82rem;color:var(--muted)}
+.tabcard{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.tabstrip{display:flex;gap:2px;padding:8px 8px 0;background:#f1f5f9;border-bottom:1px solid var(--line)}
+.tabbtn{display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid transparent;border-bottom:0;background:transparent;color:var(--muted);border-radius:10px 10px 0 0;cursor:pointer;font-size:.9rem;margin-bottom:-1px}
+.tabbtn:hover{background:rgba(255,255,255,.6)}
+.tabbtn.on{background:#fff;color:var(--text);font-weight:600;border-color:var(--line);padding-bottom:9px}
+.tabbtn .n{font-size:.75rem;font-weight:500;color:var(--muted);background:#e2e8f0;border-radius:99px;padding:0 7px}
+.tabbtn.on .n{background:#ede9fe;color:#6d28d9}
+.tabpanel{height:420px;overflow:auto;padding:16px 18px}
+#p-links a{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;word-break:normal}
 .followup{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 #chat{margin-top:12px}
 @keyframes popIn{from{opacity:0;transform:translateX(28px) scale(.97)}to{opacity:1;transform:none}}
-@media (max-width:900px){.layout,.split .layout{flex-direction:column;align-items:stretch}.col-left,.split .col-left{flex:none;width:100%;max-width:720px;margin:0 auto}.col-right,.split .col-right{width:100%;max-width:720px;margin:0 auto;flex:none}}
 h1{font-size:1.5rem;margin:0 0 4px}
 .sub{color:var(--muted);margin:0 0 24px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
@@ -33,7 +49,7 @@ select{padding:11px 10px;border:1px solid var(--line);background:#fff}
 .ghost{padding:7px 12px;border:1px solid var(--line);background:#fff;color:var(--text);cursor:pointer;text-decoration:none;font-size:.9rem;display:inline-block}
 .ghost:hover{background:var(--bg)}
 #error{display:none;margin-top:16px;padding:12px 14px;background:#fef2f2;color:#b91c1c;border-radius:10px}
-#result{display:none;margin-top:20px}
+#result{display:none}
 #result.busy .body{opacity:.45;pointer-events:none}
 .head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
 .head h2{font-size:1.1rem;margin:0}
@@ -65,7 +81,7 @@ a{color:#2563eb}
 .left{color:var(--muted);font-size:.85rem;margin-top:6px}
 
 /* Loading animation (from your pipeline file) */
-#loader{display:none;margin-top:20px}
+#loader{display:none;max-width:720px;margin:20px auto 0}
 .stepper-header{display:flex;justify-content:space-between;position:relative;margin-bottom:24px;padding:0 10px}
 .stepper-line-bg{position:absolute;top:15px;left:30px;right:30px;height:3px;background:#f1f5f9;z-index:1}
 .stepper-line-progress{position:absolute;top:15px;left:30px;height:3px;background:linear-gradient(90deg,#3b82f6,#a855f7,#10b981);z-index:2;width:0%;transition:width .4s ease-in-out;max-width:calc(100% - 60px)}
@@ -111,9 +127,8 @@ a{color:#2563eb}
 </style>
 </head>
 <body>
-<main>
-<div class="layout" id="layout">
-<div class="col-left">
+<main id="main">
+<div class="top">
   <h1>AI Web Summarizer</h1>
   <p class="sub">Paste a link to get a summary, keywords, contacts and links.</p>
 
@@ -129,6 +144,8 @@ a{color:#2563eb}
     </div>
     <div id="error" role="alert"></div>
   </div>
+
+</div>
 
   <!-- Loading -->
   <div id="loader" class="card" aria-live="polite">
@@ -154,6 +171,8 @@ a{color:#2563eb}
     <div class="load-label" id="loadLabel">Loading...</div>
   </div>
 
+<div class="results" id="layout">
+<div class="col-main">
   <!-- Result -->
   <div id="result" class="card">
     <div class="head">
@@ -170,7 +189,7 @@ a{color:#2563eb}
       <div class="summary"><p id="sum"></p><ul id="take"></ul></div>
     </div>
     <div class="followup">
-      <button class="ghost" id="askBtn" aria-expanded="false">Ask a follow-up (3 left)</button>
+      <button class="askbtn" id="askBtn" aria-expanded="false"><span class="orb"></span><span>Ask a follow-up</span><span class="count" id="askCount">3 left</span></button>
       <div id="chat" hidden>
         <div class="msgs" id="msgs"></div>
         <div class="row"><input id="q" type="text" placeholder="Ask about this page" maxlength="300" aria-label="Your question"><button id="ask" class="btn">Send</button></div>
@@ -180,9 +199,15 @@ a{color:#2563eb}
   </div>
 </div>
 
-<aside class="col-right" id="side">
-  <div class="card"><h3 class="side-h">Contacts</h3><div class="scroll" id="p-contacts"></div></div>
-  <div class="card"><h3 class="side-h">Links</h3><div class="scroll" id="p-links"></div></div>
+<aside class="col-side" id="side">
+  <div class="tabcard">
+    <div class="tabstrip" role="tablist">
+      <button class="tabbtn on" data-t="contacts" role="tab">Contacts <span class="n" id="cnt-contacts">0</span></button>
+      <button class="tabbtn" data-t="links" role="tab">Links <span class="n" id="cnt-links">0</span></button>
+    </div>
+    <div class="tabpanel" id="p-contacts"></div>
+    <div class="tabpanel" id="p-links" hidden></div>
+  </div>
 </aside>
 </div>
 </main>
@@ -254,14 +279,16 @@ function render() {
     grp("Addresses", c.addresses, (a) => `<span>${esc(a)}</span>`);
   $("p-contacts").innerHTML = html || '<p class="empty">No contact details found on this page.</p>';
 
-  const list = (arr) => arr.map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.text || l.url)}</a>`).join("");
+  const list = (arr) => arr.map((l) => `<a href="${esc(l.url)}" title="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.text || l.url)}</a>`).join("");
   const L = d.links;
   $("p-links").innerHTML = (L.internal.length ? `<div class="grp"><h3>On this site (${L.internal.length})</h3>${list(L.internal)}</div>` : "") +
     (L.external.length ? `<div class="grp"><h3>Other sites (${L.external.length})</h3>${list(L.external)}</div>` : "") ||
     '<p class="empty">No links found.</p>';
+  $("cnt-contacts").textContent = c.emails.length + c.phones.length + c.socials.length + c.addresses.length;
+  $("cnt-links").textContent = L.internal.length + L.external.length;
 }
 function setLeft(n) {
-  left = n; $("askBtn").textContent = n ? `Ask a follow-up (${n} left)` : "Follow-up limit reached";
+  left = n; $("askCount").textContent = n ? `${n} left` : "limit reached";
   $("left").textContent = n ? `${n} question${n > 1 ? "s" : ""} left` : "No follow-up questions left for this page.";
   $("ask").disabled = $("q").disabled = !n;
 }
@@ -269,7 +296,7 @@ function setLeft(n) {
 /* ---------- actions ---------- */
 async function summarize() {
   const url = $("url").value.trim(); if (!url) return;
-  showError(""); $("result").style.display = "none"; $("layout").classList.remove("split"); $("go").disabled = true;
+  showError(""); $("result").style.display = "none"; $("layout").classList.remove("show"); $("main").classList.add("active"); $("go").disabled = true;
   startLoader(url);
   try {
     const lang = $("lang").value;
@@ -277,7 +304,7 @@ async function summarize() {
     await stopLoader();
     base = res; baseLang = lang; data = res;
     $("msgs").innerHTML = ""; $("chat").hidden = true; $("askBtn").setAttribute("aria-expanded", "false"); setLeft(3);
-    render(); $("result").style.display = "block"; $("layout").classList.add("split");
+    render(); $("result").style.display = "block"; $("layout").classList.add("show");
   } catch (e) {
     timers.forEach(clearTimeout); timers = []; $("loader").style.display = "none"; showError(e.message);
   } finally { $("go").disabled = false; }
@@ -328,6 +355,11 @@ $("url").addEventListener("keydown", (e) => { if (e.key === "Enter") summarize()
 $("lang").onchange = translate;
 $("ask").onclick = ask;
 $("q").addEventListener("keydown", (e) => { if (e.key === "Enter") ask(); });
+document.querySelectorAll(".tabbtn").forEach((b) => (b.onclick = () => {
+  document.querySelectorAll(".tabbtn").forEach((x) => x.classList.toggle("on", x === b));
+  $("p-contacts").hidden = b.dataset.t !== "contacts";
+  $("p-links").hidden = b.dataset.t !== "links";
+}));
 $("askBtn").onclick = () => {
   const open = $("chat").hidden;
   $("chat").hidden = !open; $("askBtn").setAttribute("aria-expanded", String(open));
@@ -338,5 +370,3 @@ document.querySelectorAll(".pop button").forEach((b) => (b.onclick = () => { exp
 </script>
 </body>
 </html>
-
-
