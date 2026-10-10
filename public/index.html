@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Web Summarizer</title>
+<title>Gist: AI Web Summarizer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%233b82f6'/%3E%3Cstop offset='.55' stop-color='%23a855f7'/%3E%3Cstop offset='1' stop-color='%2310b981'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Crect x='7' y='9' width='18' height='3' rx='1.5' fill='%23fff'/%3E%3Crect x='7' y='15' width='13' height='3' rx='1.5' fill='%23fff' opacity='.85'/%3E%3Crect x='7' y='21' width='8' height='3' rx='1.5' fill='%23fff' opacity='.7'/%3E%3Ccircle cx='23.5' cy='22.5' r='3' fill='%23fff'/%3E%3C/svg%3E">
 <style>
 :root{--bg:#f8fafc;--card:#fff;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;--blue:#3b82f6;--purple:#a855f7;--green:#10b981}
 *{box-sizing:border-box}
@@ -36,16 +37,32 @@ main.active{padding-top:0}
 .followup{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 #chat{margin-top:12px}
 @keyframes popIn{from{opacity:0;transform:translateX(28px) scale(.97)}to{opacity:1;transform:none}}
-h1{font-size:1.5rem;margin:0 0 4px}
+h1{font-size:2rem;margin:0;letter-spacing:-.02em;line-height:1.1;text-align:left}
+h1 .g{font-weight:700}
+h1 .rest{font-weight:500;color:var(--muted)}
+.brand{display:inline-flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:14px;margin-bottom:10px}
+.brand svg{width:64px;height:64px;flex:none;filter:drop-shadow(0 4px 10px rgba(99,102,241,.3))}
 .sub{color:var(--muted);margin:0 0 24px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
 .row{display:flex;gap:8px;flex-wrap:wrap}
 input,select,button{font:inherit;border-radius:10px}
-input[type=url],input[type=text]{flex:1;min-width:200px;padding:11px 14px;border:1px solid var(--line);background:#fff}
+input[type=url],input[type=text]{flex:1;min-width:200px;padding:11px 14px;border:1.5px solid transparent;border-radius:12px;
+ background:linear-gradient(#fff,#fff) padding-box,linear-gradient(90deg,#e2e8f0,#e2e8f0) border-box;transition:box-shadow .2s}
+input[type=url]:hover,input[type=text]:hover{background:linear-gradient(#fff,#fff) padding-box,linear-gradient(90deg,#cbd5e1,#cbd5e1) border-box}
+input[type=url]:focus,input[type=text]:focus{outline:none;background:linear-gradient(#fff,#fff) padding-box,linear-gradient(90deg,#3b82f6,#a855f7,#10b981,#3b82f6) border-box;background-size:100% 100%,300% 100%;
+ animation:borderflow 3s linear infinite;box-shadow:0 0 0 4px rgba(168,85,247,.12),0 8px 20px -10px rgba(99,102,241,.6)}
+@keyframes borderflow{to{background-position:0 0,300% 0}}
 input:focus,select:focus,button:focus-visible,summary:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
 select{padding:11px 10px;border:1px solid var(--line);background:#fff}
-.btn{padding:11px 18px;border:0;background:var(--blue);color:#fff;cursor:pointer}
-.btn:disabled{background:#93c5fd;cursor:not-allowed}
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border:0;border-radius:12px;font-weight:600;color:#fff;cursor:pointer;overflow:hidden;
+ background:linear-gradient(135deg,#3b82f6,#a855f7);box-shadow:0 6px 16px -4px rgba(99,102,241,.55);transition:transform .15s,box-shadow .2s}
+.btn::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.38) 50%,transparent 70%);transform:translateX(-120%);transition:transform .6s ease}
+.btn:hover::before{transform:translateX(120%)}
+.btn:hover{transform:translateY(-1px);box-shadow:0 10px 22px -6px rgba(99,102,241,.6)}
+.btn:active{transform:translateY(0);box-shadow:0 4px 10px -4px rgba(99,102,241,.5)}
+.btn:disabled{background:linear-gradient(135deg,#bfdbfe,#e9d5ff);box-shadow:none;transform:none;cursor:not-allowed}
+.btn:disabled::before{display:none}
+.btn svg{width:16px;height:16px;fill:#fff;flex:none}
 .ghost{padding:7px 12px;border:1px solid var(--line);background:#fff;color:var(--text);cursor:pointer;text-decoration:none;font-size:.9rem;display:inline-block}
 .ghost:hover{background:var(--bg)}
 #error{display:none;margin-top:16px;padding:12px 14px;background:#fef2f2;color:#b91c1c;border-radius:10px}
@@ -124,23 +141,51 @@ a{color:#2563eb}
 @keyframes coreSpin{100%{transform:rotate(360deg)}}
 @keyframes sparkleFlash{0%{transform:scale(.8);opacity:.5}100%{transform:scale(1.2);opacity:1}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+/* ---- intro animation ---- */
+#fx{position:fixed;inset:0;width:100vw;height:100vh;z-index:3;pointer-events:none}
+.ch{white-space:pre}
+.intro .ch{display:none}
+.intro .ch.on{display:inline}
+.intro .brand{will-change:transform}
+.intro .brand svg{opacity:0}
+.intro .brand svg.show{opacity:1;animation:logoPop .7s cubic-bezier(.2,1.4,.4,1)}
+@keyframes logoPop{0%{transform:scale(.3);filter:drop-shadow(0 0 0 rgba(168,85,247,0))}60%{transform:scale(1.15);filter:drop-shadow(0 0 28px rgba(168,85,247,.8))}100%{transform:scale(1)}}
+.caret{display:inline-block;width:2px;height:1em;margin:0 -2px 0 0;vertical-align:-.12em;background:var(--blue);animation:blink .7s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.top .sub,.top .card{transition:opacity .55s ease,transform .55s cubic-bezier(.2,.9,.3,1.25)}
+.top .card{transition-delay:.12s}
+.intro .top .sub,.intro .top .card{opacity:0;transform:translateY(14px) scale(.94);pointer-events:none}
+@media (max-width:560px){.brand svg{width:44px;height:44px}h1{font-size:1.2rem}}
+.langwrap{position:relative}
+.iconbtn{width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--line);background:#fff;color:#475569;border-radius:12px;cursor:pointer;padding:0;transition:background .15s,color .15s,border-color .15s}
+.iconbtn:hover,.iconbtn[aria-expanded=true]{background:var(--bg);color:var(--text)}
+.iconbtn svg{width:21px;height:21px;fill:currentColor}
+.iconbtn.set{color:#6d28d9;border-color:#ddd6fe;background:#f5f3ff}
+.langmenu{position:absolute;right:0;top:50px;z-index:20;width:176px;max-height:280px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px;box-shadow:0 12px 32px rgba(15,23,42,.12);animation:menuIn .15s ease}
+.langmenu button{display:flex;align-items:center;justify-content:space-between;width:100%;border:0;background:none;padding:8px 10px;border-radius:8px;cursor:pointer;text-align:left;font-size:.92rem;color:var(--text)}
+.langmenu button:hover{background:var(--bg)}
+.langmenu button.on{color:#6d28d9;font-weight:600}
+.langmenu button.on::after{content:"";width:5px;height:9px;border:solid #6d28d9;border-width:0 2px 2px 0;transform:rotate(45deg);margin:0 4px 3px 0}
+@keyframes menuIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 </style>
 </head>
-<body>
+<body class="intro">
+<canvas id="fx" aria-hidden="true"></canvas>
 <main id="main">
 <div class="top">
-  <h1>AI Web Summarizer</h1>
-  <p class="sub">Paste a link to get a summary, keywords, contacts and links.</p>
+  <div class="brand"><svg viewBox="0 0 32 32" role="img" aria-label="Gist logo"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset=".55" stop-color="#a855f7"/><stop offset="1" stop-color="#10b981"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#lg)"/><rect x="7" y="9" width="18" height="3" rx="1.5" fill="#fff"/><rect x="7" y="15" width="13" height="3" rx="1.5" fill="#fff" opacity=".85"/><rect x="7" y="21" width="8" height="3" rx="1.5" fill="#fff" opacity=".7"/><circle cx="23.5" cy="22.5" r="3" fill="#fff"/></svg><h1 id="brandText"><span class="g">Gist</span><span class="rest"> - AI Web Summarizer</span></h1></div>
+  <p class="sub">Paste a link and get the gist: summary, keywords, contacts and links.</p>
 
   <div class="card">
     <div class="row">
       <input id="url" type="url" placeholder="https://example.com" aria-label="Web page URL">
-      <select id="lang" aria-label="Language">
+      <select id="lang" hidden aria-hidden="true">
         <option>English</option><option>Hindi</option><option>Telugu</option><option>Tamil</option>
         <option>Kannada</option><option>Malayalam</option><option>Marathi</option><option>Bengali</option>
         <option>Spanish</option><option>French</option><option>German</option><option>Japanese</option><option>Arabic</option>
       </select>
-      <button id="go" class="btn">Summarize</button>
+      <div class="langwrap"><button type="button" class="iconbtn" id="langBtn" aria-haspopup="true" aria-expanded="false" aria-label="Language: English" title="Language"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg></button><div class="langmenu" id="langMenu" role="menu" hidden></div></div>
+      <button id="go" class="btn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z"/></svg>Summarize</button>
     </div>
     <div id="error" role="alert"></div>
   </div>
@@ -366,6 +411,162 @@ $("askBtn").onclick = () => {
   if (open) $("q").focus();
 };
 document.querySelectorAll(".pop button").forEach((b) => (b.onclick = () => { exportAs(b.dataset.x); b.closest("details").open = false; }));
+})();
+</script>
+<script>
+/* ===== INTRO: blobs drift very slowly -> HALF fuse into the logo (fast), the OTHER half move away and fade -> logo -> name types -> title shrinks while moving up -> UI pops ===== */
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const body = document.body, brand = document.querySelector(".brand"), h1 = $("brandText"), svg = document.querySelector(".brand svg"), cv = $("fx");
+  const ctx = cv.getContext && cv.getContext("2d");
+  const T_CONV = 1000, T_LOGO = 1850, T_TYPE = 2150, CH = 28, FX_END = 2500;       // ms
+  const MOVE_MS = 900;
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const easeInOut = (k) => (k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+
+  // split the name into single characters so they can be typed one by one
+  const chars = [];
+  h1.querySelectorAll("span").forEach((span) => {
+    const t = span.textContent; span.textContent = "";
+    for (const c of t) { const e = document.createElement("span"); e.className = "ch"; e.textContent = c; span.appendChild(e); chars.push(e); }
+  });
+  const caret = document.createElement("span"); caret.className = "caret";
+
+  // soft, blunt blob in the logo's colours (stacked rounded squares = blur)
+  function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  const sprite = document.createElement("canvas"); sprite.width = sprite.height = 64;
+  const sc = sprite.getContext && sprite.getContext("2d");
+  if (sc) {
+    const g = sc.createLinearGradient(0, 0, 64, 64);
+    g.addColorStop(0, "#3b82f6"); g.addColorStop(.55, "#a855f7"); g.addColorStop(1, "#10b981");
+    sc.fillStyle = g;
+    for (let i = 0; i < 12; i++) { const inset = 4 + i * 2.2, s = 64 - inset * 2; sc.globalAlpha = .12; rr(sc, inset, inset, s, s, Math.max(6, s * .32)); sc.fill(); }
+    sc.globalAlpha = 1;
+  }
+
+  let parts = [], t0 = 0, raf = 0, running = false;
+  let shown, typed, shrunk, moved, popped, cleared, tMove, dx, dy, scale;
+
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+    if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  // every blob gets its own direction, number of turns, speed, easing and wobble -> no repeating pattern
+  function makeParticles() {          // random spots; they drift very slowly, then half fuse into the logo and half move away
+    const n = innerWidth < 600 ? 110 : 260;
+    return Array.from({ length: n }, (_, i) => {
+      const fuse = i % 2 === 0;
+      return {
+        bx: Math.random() * innerWidth, by: Math.random() * innerHeight,
+        s: rand(14, 32), a: rand(.4, .9),
+        vx: rand(-22, 22), vy: rand(-22, 22),                                                    // slow drift (px per second)
+        ax: rand(5, 12), ay: rand(5, 12), w: rand(.8, 1.6), ph: rand(0, 6.28), ph2: rand(0, 6.28), // very slow sway
+        fuse, d: fuse ? rand(0, 300) : rand(0, 400), dur: fuse ? rand(650, 1050) : rand(700, 1100),
+        far: rand(160, 420)                                                                      // how far a blob moves away
+      };
+    });
+  }
+
+  function setBrand(tr, ms, ease) { brand.style.transition = ms ? "transform " + ms + "ms " + ease : "none"; brand.style.transform = tr; }
+  function placeBrand() {              // big, in the middle of the screen
+    setBrand("none", 0);
+    chars.forEach((c) => (c.style.display = "inline"));           // measure with the full name
+    const r = brand.getBoundingClientRect();
+    chars.forEach((c) => (c.style.display = ""));
+    scale = Math.min(1.5, innerWidth * .92 / (r.width || 1));
+    dx = innerWidth / 2 - (r.left + r.width / 2); dy = innerHeight / 2 - (r.top + r.height / 2);
+    setBrand("translate(" + dx + "px," + dy + "px) scale(" + scale + ")", 0);
+  }
+
+  function frame(now) {
+    if (!running) return;
+    const t = now - t0, W = innerWidth, H = innerHeight;
+
+    if (ctx && t < FX_END) {
+      ctx.clearRect(0, 0, W, H);
+      const r = svg.getBoundingClientRect(), tx = r.left + r.width / 2, ty = r.top + r.height / 2, ts = t / 1000;
+      for (const p of parts) {
+        let x = p.bx + p.vx * ts + Math.sin(ts * p.w + p.ph) * p.ax, y = p.by + p.vy * ts + Math.cos(ts * p.w * .8 + p.ph2) * p.ay;
+        let s = p.s, a = p.a * Math.min(1, t / 250);
+        const k = clamp((t - T_CONV - p.d) / p.dur, 0, 1);
+        if (k > 0) {
+          const e = k * k * (3 - 2 * k);                       // smooth start and finish
+          if (p.fuse) {                                        // this half melts into the logo
+            x += (tx - x) * e; y += (ty - y) * e; s *= 1 - .85 * e;
+            if (k > .85) a *= (1 - k) / .15;
+          } else {                                             // this half moves away from the logo and fades
+            const ux = x - tx, uy = y - ty, dist = Math.hypot(ux, uy) || 1;
+            x += ux / dist * p.far * e; y += uy / dist * p.far * e; a *= 1 - e;
+          }
+        }
+        if (a <= .01) continue;
+        ctx.globalAlpha = a; ctx.drawImage(sprite, x - s / 2, y - s / 2, s, s);
+      }
+      ctx.globalAlpha = 1;
+    } else if (ctx && !cleared) { ctx.clearRect(0, 0, W, H); cleared = true; }
+
+    if (!shown && t >= T_LOGO) { shown = true; svg.classList.add("show"); }   // logo forms in the middle
+
+    if (t >= T_TYPE) {                 // typing: the pair stays centred, so the logo slides left as the text grows
+      const n = Math.min(chars.length, Math.floor((t - T_TYPE) / CH) + 1);
+      while (typed < n) { chars[typed].classList.add("on"); chars[typed].after(caret); typed++; }
+    }
+    const tyEnd = T_TYPE + chars.length * CH;
+    if (typed === chars.length && !moved && t >= tyEnd + 120) {            // shrink + move up as ONE smooth motion
+      moved = true; tMove = t; caret.remove();
+      setBrand("translate(0px,0px) scale(1)", MOVE_MS, "cubic-bezier(.45,0,.2,1)");
+    }
+    if (moved && !popped && t >= tMove + MOVE_MS + 60) { popped = true; body.classList.remove("intro"); }   // input + buttons pop up only after the title has arrived
+    if (popped && t >= tMove + MOVE_MS + 850) return finish();
+    raf = requestAnimationFrame(frame);
+  }
+
+  function finish() {                  // also used to skip
+    running = false; cancelAnimationFrame(raf);
+    chars.forEach((c) => c.classList.add("on"));
+    svg.classList.add("show"); body.classList.remove("intro");
+    brand.style.transition = ""; brand.style.transform = "";
+    cv.style.display = "none"; caret.remove();
+    document.removeEventListener("pointerdown", finish); document.removeEventListener("keydown", finish);
+  }
+
+  function start() {
+    cancelAnimationFrame(raf);
+    body.classList.add("intro"); chars.forEach((c) => c.classList.remove("on")); svg.classList.remove("show"); caret.remove();
+    cv.style.display = "block"; resize(); parts = makeParticles(); placeBrand();
+    shown = false; typed = 0; shrunk = false; moved = false; popped = false; cleared = false; running = true; t0 = performance.now();
+    document.addEventListener("pointerdown", finish, { once: true }); document.addEventListener("keydown", finish, { once: true });
+    raf = requestAnimationFrame(frame);
+  }
+
+  window.addEventListener("resize", () => running && resize());
+  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  reduce ? finish() : start();
+})();
+</script>
+<script>
+/* ===== language picker: icon button + popup list (drives the hidden <select id="lang">) ===== */
+(function () {
+  const sel = document.getElementById("lang"), btn = document.getElementById("langBtn"), menu = document.getElementById("langMenu");
+  [...sel.options].forEach((o) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.setAttribute("role", "menuitemradio"); b.textContent = o.value; b.dataset.v = o.value;
+    b.onclick = () => { sel.value = o.value; sel.dispatchEvent(new Event("change")); sync(); close(); };
+    menu.appendChild(b);
+  });
+  function sync() {
+    menu.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === sel.value));
+    btn.classList.toggle("set", sel.value !== "English");
+    btn.setAttribute("aria-label", "Language: " + sel.value);
+  }
+  function close() { menu.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+  btn.onclick = (e) => { e.stopPropagation(); menu.hidden = !menu.hidden; btn.setAttribute("aria-expanded", String(!menu.hidden)); };
+  document.addEventListener("click", (e) => { if (!menu.contains(e.target)) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  sync();
 })();
 </script>
 </body>
