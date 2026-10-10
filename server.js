@@ -71,7 +71,11 @@ async function summarize(title, text) {
       ],
     }),
   });
-  if (!res.ok) throw new Error(`AI API error (${res.status})`);
+    if (!res.ok) {
+    const body = await res.text();
+    console.error("Groq error:", res.status, body);
+    throw new Error(`AI API error (${res.status})`);
+  }
   const data = await res.json();
   return data.choices[0].message.content;
 }
