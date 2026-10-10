@@ -177,6 +177,9 @@ a{color:#2563eb}
 </main>
 
 <script>
+window.addEventListener("error", (e) => alert("Script error: " + e.message));
+window.addEventListener("unhandledrejection", (e) => alert("Error: " + ((e.reason && e.reason.message) || e.reason)));
+(function () {
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmt = (s) => esc(s).replace(/==(.+?)==/g, "<mark>$1</mark>").replace(/==/g, "");
@@ -211,8 +214,9 @@ async function stopLoader() {
 }
 
 /* ---------- api ---------- */
+const API = location.protocol === "file:" ? "https://ai-web-summarizer-e4gt.onrender.com" : "";
 async function api(path, body) {
-  const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const r = await fetch(API + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error || "Request failed");
   return j;
@@ -308,15 +312,16 @@ function exportAs(kind) {
 }
 
 $("go").onclick = summarize;
-$("url").onkeydown = (e) => e.key === "Enter" && summarize();
+$("url").addEventListener("keydown", (e) => { if (e.key === "Enter") summarize(); });
 $("lang").onchange = translate;
 $("ask").onclick = ask;
-$("q").onkeydown = (e) => e.key === "Enter" && ask();
+$("q").addEventListener("keydown", (e) => { if (e.key === "Enter") ask(); });
 document.querySelectorAll(".tab").forEach((b) => (b.onclick = () => {
   document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("on", x === b));
   document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("on", p.id === "p-" + b.dataset.t));
 }));
 document.querySelectorAll(".pop button").forEach((b) => (b.onclick = () => { exportAs(b.dataset.x); b.closest("details").open = false; }));
+})();
 </script>
 </body>
 </html>
