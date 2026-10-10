@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Web Summarizer</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #f4f5f7; margin: 0; padding: 40px 16px; color: #1c1e21; }
+    .card { max-width: 680px; margin: 0 auto; background: #fff; padding: 28px; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+    h1 { margin-top: 0; font-size: 1.6rem; }
+    p.sub { color: #666; margin-top: -6px; }
+    .row { display: flex; gap: 8px; }
+    input { flex: 1; padding: 12px; font-size: 1rem; border: 1px solid #ccd0d5; border-radius: 8px; }
+    button { padding: 12px 20px; font-size: 1rem; border: 0; border-radius: 8px; background: #4f46e5; color: #fff; cursor: pointer; }
+    button:disabled { background: #a5a3d9; cursor: not-allowed; }
+    #loading { display: none; margin-top: 20px; color: #555; }
+    #error { display: none; margin-top: 20px; padding: 12px; background: #fdecea; color: #b3261e; border-radius: 8px; }
+    #result { display: none; margin-top: 24px; }
+    #result h2 { font-size: 1.1rem; margin-bottom: 8px; }
+    #summary { white-space: pre-wrap; line-height: 1.6; background: #f8f8fb; padding: 16px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>AI Web Summarizer</h1>
+    <p class="sub">Paste a link and get a short AI-generated summary.</p>
+    <div class="row">
+      <input id="url" type="url" placeholder="https://example.com/article" />
+      <button id="btn">Summarize</button>
+    </div>
+    <div id="loading">Loading...</div>
+    <div id="error"></div>
+    <div id="result">
+      <h2 id="title"></h2>
+      <div id="summary"></div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    async function summarize() {
+      const url = $("url").value.trim();
+      $("error").style.display = "none";
+      $("result").style.display = "none";
+      if (!url) return;
+
+      $("btn").disabled = true;
+      $("loading").style.display = "block";
+      try {
+        const res = await fetch("/api/summarize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Request failed");
+        $("title").textContent = data.title || "Summary";
+        $("summary").textContent = data.summary;
+        $("result").style.display = "block";
+      } catch (e) {
+        $("error").textContent = e.message;
+        $("error").style.display = "block";
+      } finally {
+        $("btn").disabled = false;
+        $("loading").style.display = "none";
+      }
+    }
+
+    $("btn").addEventListener("click", summarize);
+    $("url").addEventListener("keydown", (e) => e.key === "Enter" && summarize());
+  </script>
+</body>
+</html>
