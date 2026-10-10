@@ -8,7 +8,18 @@
 :root{--bg:#f8fafc;--card:#fff;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;--blue:#3b82f6;--purple:#a855f7;--green:#10b981}
 *{box-sizing:border-box}
 body{margin:0;padding:40px 16px 80px;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55}
-main{max-width:720px;margin:0 auto}
+main{max-width:1120px;margin:0 auto}
+.layout{display:flex;justify-content:center;align-items:flex-start;gap:20px}
+.col-left{flex:0 1 720px;min-width:0;transition:flex-basis .5s ease}
+.col-right{display:none;flex:1 1 0;min-width:0;flex-direction:column;gap:16px}
+.split .col-left{flex:0 0 calc(56% - 10px)}
+.split .col-right{display:flex;animation:popIn .5s ease}
+.side-h{font-size:1rem;margin:0 0 10px}
+.scroll{max-height:340px;overflow:auto}
+.followup{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+#chat{margin-top:12px}
+@keyframes popIn{from{opacity:0;transform:translateX(28px) scale(.97)}to{opacity:1;transform:none}}
+@media (max-width:900px){.layout,.split .layout{flex-direction:column;align-items:stretch}.col-left,.split .col-left{flex:none;width:100%;max-width:720px;margin:0 auto}.col-right,.split .col-right{width:100%;max-width:720px;margin:0 auto;flex:none}}
 h1{font-size:1.5rem;margin:0 0 4px}
 .sub{color:var(--muted);margin:0 0 24px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
@@ -42,11 +53,6 @@ details.menu summary::-webkit-details-marker{display:none}
 .summary p{margin:0 0 12px}
 .summary ul{margin:0;padding-left:20px}
 mark{background:#ede9fe;color:#4c1d95;border-radius:3px;padding:0 2px}
-.tabs{display:flex;gap:4px;margin:20px 0 10px;border-bottom:1px solid var(--line)}
-.tab{border:0;background:none;padding:8px 12px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:0}
-.tab.on{color:var(--text);border-color:var(--blue);font-weight:600}
-.panel{display:none;max-height:340px;overflow:auto}
-.panel.on{display:block}
 .grp{margin-bottom:14px}
 .grp h3{font-size:.85rem;color:var(--muted);margin:0 0 4px;font-weight:600}
 .grp a,.grp span{display:block;word-break:break-all;font-size:.92rem;padding:2px 0}
@@ -106,6 +112,8 @@ a{color:#2563eb}
 </head>
 <body>
 <main>
+<div class="layout" id="layout">
+<div class="col-left">
   <h1>AI Web Summarizer</h1>
   <p class="sub">Paste a link to get a summary, keywords, contacts and links.</p>
 
@@ -161,19 +169,22 @@ a{color:#2563eb}
       <div class="chips" id="chips"></div>
       <div class="summary"><p id="sum"></p><ul id="take"></ul></div>
     </div>
-    <div class="tabs" role="tablist">
-      <button class="tab on" data-t="contacts">Contacts</button>
-      <button class="tab" data-t="links">Links</button>
-      <button class="tab" data-t="chat">Ask a follow-up</button>
-    </div>
-    <div class="panel on" id="p-contacts"></div>
-    <div class="panel" id="p-links"></div>
-    <div class="panel" id="p-chat">
-      <div class="msgs" id="msgs"></div>
-      <div class="row"><input id="q" type="text" placeholder="Ask about this page" maxlength="300" aria-label="Your question"><button id="ask" class="btn">Send</button></div>
-      <div class="left" id="left">3 questions left</div>
+    <div class="followup">
+      <button class="ghost" id="askBtn" aria-expanded="false">Ask a follow-up (3 left)</button>
+      <div id="chat" hidden>
+        <div class="msgs" id="msgs"></div>
+        <div class="row"><input id="q" type="text" placeholder="Ask about this page" maxlength="300" aria-label="Your question"><button id="ask" class="btn">Send</button></div>
+        <div class="left" id="left">3 questions left</div>
+      </div>
     </div>
   </div>
+</div>
+
+<aside class="col-right" id="side">
+  <div class="card"><h3 class="side-h">Contacts</h3><div class="scroll" id="p-contacts"></div></div>
+  <div class="card"><h3 class="side-h">Links</h3><div class="scroll" id="p-links"></div></div>
+</aside>
+</div>
 </main>
 
 <script>
@@ -250,22 +261,23 @@ function render() {
     '<p class="empty">No links found.</p>';
 }
 function setLeft(n) {
-  left = n; $("left").textContent = n ? `${n} question${n > 1 ? "s" : ""} left` : "No follow-up questions left for this page.";
+  left = n; $("askBtn").textContent = n ? `Ask a follow-up (${n} left)` : "Follow-up limit reached";
+  $("left").textContent = n ? `${n} question${n > 1 ? "s" : ""} left` : "No follow-up questions left for this page.";
   $("ask").disabled = $("q").disabled = !n;
 }
 
 /* ---------- actions ---------- */
 async function summarize() {
   const url = $("url").value.trim(); if (!url) return;
-  showError(""); $("result").style.display = "none"; $("go").disabled = true;
+  showError(""); $("result").style.display = "none"; $("layout").classList.remove("split"); $("go").disabled = true;
   startLoader(url);
   try {
     const lang = $("lang").value;
     const res = await api("/api/summarize", { url, language: lang });
     await stopLoader();
     base = res; baseLang = lang; data = res;
-    $("msgs").innerHTML = ""; setLeft(3);
-    render(); $("result").style.display = "block";
+    $("msgs").innerHTML = ""; $("chat").hidden = true; $("askBtn").setAttribute("aria-expanded", "false"); setLeft(3);
+    render(); $("result").style.display = "block"; $("layout").classList.add("split");
   } catch (e) {
     timers.forEach(clearTimeout); timers = []; $("loader").style.display = "none"; showError(e.message);
   } finally { $("go").disabled = false; }
@@ -316,12 +328,15 @@ $("url").addEventListener("keydown", (e) => { if (e.key === "Enter") summarize()
 $("lang").onchange = translate;
 $("ask").onclick = ask;
 $("q").addEventListener("keydown", (e) => { if (e.key === "Enter") ask(); });
-document.querySelectorAll(".tab").forEach((b) => (b.onclick = () => {
-  document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("on", x === b));
-  document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("on", p.id === "p-" + b.dataset.t));
-}));
+$("askBtn").onclick = () => {
+  const open = $("chat").hidden;
+  $("chat").hidden = !open; $("askBtn").setAttribute("aria-expanded", String(open));
+  if (open) $("q").focus();
+};
 document.querySelectorAll(".pop button").forEach((b) => (b.onclick = () => { exportAs(b.dataset.x); b.closest("details").open = false; }));
 })();
 </script>
 </body>
 </html>
+
+
